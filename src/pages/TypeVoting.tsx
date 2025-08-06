@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import supabase from '../supabase-client';
-import { useAuth } from './../context/AuthContext';
+import { useAuth } from './../AuthContext';
 import profileImage from './assets/profile.jpeg';
 import { getTypeVoting } from './../services/supabaseService';
 import {
@@ -40,10 +40,10 @@ const TypeVoting = () => {
   };
 
   useEffect(() => {
-    /*  if (!user) {
+    if (!user) {
       navigate('/login');
       return;
-    } */
+    }
     loadTypeVoting();
   }, []);
 

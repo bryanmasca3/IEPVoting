@@ -1,17 +1,12 @@
-import { useEffect } from 'react';
-import logoImage from './../assets/logo.png';
-import { useAuth } from './../AuthContext';
-import { Box } from '@mui/material';
+import { Box, Button, Typography } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-const Welcome = () => {
+import logoImage from './../assets/logo.png';
+
+const Unauthorized = () => {
   const navigate = useNavigate();
-  const { user, logout } = useAuth(); // Usuario y método de
-  useEffect(() => {
-    if (!user) {
-      navigate('/login');
-      return;
-    }
-  }, []);
+  const handleGoBack = () => {
+    navigate('/login'); // Puedes cambiar "/login" por la ruta que prefieras
+  };
   return (
     <div className="flex flex-col md:flex-row">
       {/* Izquierda */}
@@ -26,12 +21,15 @@ const Welcome = () => {
           borderRadius="50%"
           sx={{ objectFit: 'cover' }}
         />
-        <h3 className="text-5xl font-bold mb-4 text-center">
-          ELECCIONES <br></br>GENERALES <br></br>2025
-        </h3>
+        <h5 className="text-3xl font-bold mb-4 text-center">
+          PAGINA NO AUTORIZADA
+          <br></br>ERROR 403
+        </h5>
+        <Button variant="contained" color="secondary" onClick={handleGoBack}>
+          Volver al login
+        </Button>
       </div>
     </div>
   );
 };
-
-export default Welcome;
+export default Unauthorized;

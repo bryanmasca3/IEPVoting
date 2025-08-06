@@ -1,5 +1,3 @@
-import { useState } from 'react';
-import supabase from './supabase-client';
 import { CssBaseline, ThemeProvider } from '@mui/material';
 import { createTheme } from '@mui/material/styles';
 import './App.css';
@@ -19,7 +17,10 @@ import Configuration from './pages/Configuration';
 import Welcome from './pages/Welcome';
 import DepartamentPositions from './pages/DepartamentPositions';
 import Voters from './pages/Voters';
-import TypeVoting from './pages/TypeVoting';
+import PrivateRoute from './pages/components/PrivateRoute'; // Importa el componente nuevo
+
+import Unauthorized from './pages/Unauthorized';
+
 function App() {
   const mode = useSelector((state) => state.global.mode);
   const theme = useMemo(() => createTheme(themeSettings(mode)), [mode]);
@@ -33,14 +34,17 @@ function App() {
             <Routes>
               <Route path="/login" element={<Login />} />
               <Route path="*" element={<Page404 />} />
+              <Route path="/unauthorized" element={<Unauthorized />} />
+
               <Route element={<Layout />}>
                 <Route path="/" element={<Welcome />} />
                 <Route path="/votes" element={<Dashboard />} />
                 <Route path="/results" element={<Votes />} />
-                <Route path="/configuration" element={<Configuration />} />
-                <Route path="/votantes" element={<Voters />} />
-                <Route path="/groupsposiciones" element={<DepartamentPositions />} />
-                /* <Route path="/typevoting" element={<TypeVoting />} /> */
+                <Route element={<PrivateRoute allowedRoles={[1]} />}>
+                  <Route path="/configuration" element={<Configuration />} />
+                  <Route path="/votantes" element={<Voters />} />
+                  <Route path="/groupsposiciones" element={<DepartamentPositions />} />
+                </Route>
               </Route>
             </Routes>
           </AuthProvider>

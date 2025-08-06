@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import supabase from '../supabase-client';
-import { useAuth } from './../context/AuthContext';
+import { useAuth } from './../AuthContext';
 import profileImage from './assets/profile.jpeg';
 import {
   fetchCandidates,
@@ -185,10 +185,10 @@ const Configuration = () => {
 
   useEffect(() => {
     // Si no hay usuario autenticado, redirige a login
-    /*  if (!user) {
+    if (!user) {
       navigate('/login');
       return;
-    } */
+    }
 
     loadData();
   }, []);

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { TextField, Button, Box } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from './../context/AuthContext';
+import { useAuth } from './../AuthContext';
 import logoImage from './../assets/logo.png';
 import { Alert } from '@mui/material';
 
@@ -14,10 +14,10 @@ const Login = () => {
   const { user, login } = useAuth();
 
   useEffect(() => {
-    /*  if (user) {
-            navigate('/');
-        } */
-  }, [user, navigate]);
+    if (user) {
+      navigate('/');
+    }
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

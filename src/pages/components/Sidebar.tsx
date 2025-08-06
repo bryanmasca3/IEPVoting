@@ -1,4 +1,5 @@
 import React from 'react';
+import { useAuth } from './../../AuthContext';
 import {
   Box,
   Divider,
@@ -38,39 +39,47 @@ const navItems = [
     text: 'Inicio',
     url: '',
     icon: <HomeOutlined />,
+    userVoting: true,
   },
   {
     text: 'Elecciones Eclesiasticas',
     icon: null,
+    userVoting: true,
   },
   {
     text: 'Votaciones',
     url: 'votes',
     icon: <ShoppingCartOutlined />,
+    userVoting: true,
   },
   {
     text: 'Resultados',
     url: 'results',
     icon: <Groups2Outlined />,
+    userVoting: true,
   },
   {
     text: 'Configuraciones',
     icon: null,
+    userVoting: false,
   },
   {
     text: 'Votantes',
     url: 'votantes',
     icon: <Groups2Outlined />,
+    userVoting: false,
   },
   {
     text: 'Departamentos y Cargos',
     url: 'groupsposiciones',
     icon: <Groups2Outlined />,
+    userVoting: false,
   },
   {
     text: 'Candidatos',
     url: 'configuration',
     icon: <Groups2Outlined />,
+    userVoting: false,
   },
   /*  {
     text: 'Configuration',
@@ -90,11 +99,19 @@ const Sidebar = ({
   const [active, setActive] = useState('');
   const navigate = useNavigate();
   const theme = useTheme();
-
+  const { user } = useAuth();
   useEffect(() => {
     setActive(pathname.substring(1));
   }, [pathname]);
+  const filteredNavItems = navItems.filter(({ text, userVoting }) => {
+    if (!user) return false;
 
+    if (user.type !== 1 && !userVoting) {
+      return false;
+    }
+
+    return true;
+  });
   return (
     <Box component="nav">
       {isSidebarOpen && (
@@ -130,7 +147,7 @@ const Sidebar = ({
               </FlexBetween>
             </Box>
             <List>
-              {navItems.map(({ text, icon, url }) => {
+              {filteredNavItems.map(({ text, icon, url }) => {
                 if (!icon) {
                   return (
                     <Typography key={text} sx={{ m: '2.25rem 0 1rem 3rem' }}>

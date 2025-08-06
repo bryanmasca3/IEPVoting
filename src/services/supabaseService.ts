@@ -33,16 +33,31 @@ export const deleteVoteForCandidate = async (voteId) => {
   }
   return true;
 };
+export const updateUserState = async ({ id_user, state }: { id_user: string; state: boolean }) => {
+  console.log(id_user, state);
+  const { error } = await supabase
+    .from('users')
+    .update({ state }) // <-- Actualiza solo el campo 'state'
+    .eq('id', id_user); // <-- Filtro por 'id_user'
+
+  if (error) {
+    throw error;
+  }
+
+  return true;
+};
 export const createUsers = async ({
   first_name,
   last_name,
   dni,
   sede,
+  type,
 }: {
   first_name: string;
   last_name: string;
   dni: string;
   sede: string;
+  type: number;
 }) => {
   const { error } = await supabase.from('users').insert([
     {
@@ -50,6 +65,7 @@ export const createUsers = async ({
       last_name: last_name.trim().toLowerCase(),
       dni: dni.trim().toLowerCase(),
       sede: sede.trim().toLowerCase(),
+      type: type,
     },
   ]);
   if (error) {

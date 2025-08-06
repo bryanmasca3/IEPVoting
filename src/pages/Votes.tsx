@@ -17,13 +17,21 @@ import {
   TableRow,
   TableContainer,
   Paper,
-  useTheme
+  useTheme,
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import { fetchVoteCounts, subscribeToVotes, removeSubscription } from './../services/supabaseService';
+import {
+  fetchVoteCounts,
+  subscribeToVotes,
+  removeSubscription,
+} from './../services/supabaseService';
 import { BarChart } from '@mui/x-charts/BarChart';
+import { useAuth } from './../AuthContext';
+import { useNavigate } from 'react-router-dom';
 const Votes = () => {
   const [voteCounts, setVoteCounts] = useState([]);
+  const { user, logout } = useAuth(); // Usuario y método de
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState(0);
   const theme = useTheme();
@@ -50,12 +58,16 @@ const Votes = () => {
       const data = await fetchVoteCounts();
       setVoteCounts(data);
     } catch (error) {
-      console.error("Error al obtener los votos:", error);
+      console.error('Error al obtener los votos:', error);
     }
     setLoading(false);
   };
 
   useEffect(() => {
+    if (!user) {
+      navigate('/login');
+      return;
+    }
     getVoteCounts();
 
     const subscription = subscribeToVotes((payload) => {
@@ -72,82 +84,77 @@ const Votes = () => {
   const departments = Object.keys(groupedData);
 
   return (
-    <Box className= "p-4" >
-    <Card className="shadow-lg border"  sx = {{
-    color: theme.palette.secondary[200],
-      backgroundColor: theme.palette.background.alt,
-        border: "none"
-  }
-}>
-  <CardContent>
-  {
-    loading?(
-            <Box className = "flex justify-center items-center h-32" >
-        <CircularProgress color="primary" />
-  </Box>
+    <Box className="p-4">
+      <Card
+        className="shadow-lg border"
+        sx={{
+          color: theme.palette.secondary[200],
+          backgroundColor: theme.palette.background.alt,
+          border: 'none',
+        }}
+      >
+        <CardContent>
+          {loading ? (
+            <Box className="flex justify-center items-center h-32">
+              <CircularProgress color="primary" />
+            </Box>
           ) : voteCounts.length === 0 ? (
-  <Typography variant= "body1" className = "text-white" >
-    No se encontraron votos.
+            <Typography variant="body1" className="text-white">
+              No se encontraron votos.
             </Typography>
           ) : (
-  <>
-  <Tabs
-                value= { activeTab }
-onChange = {(e, newValue) => setActiveTab(newValue)}
-textColor = "inherit"
-indicatorColor = "primary"
-variant = "scrollable"
-scrollButtons = "auto"
-className = "mb-4"
-  >
-{
-  departments.map((dept, idx) => (
-    <Tab key= { dept } label = { dept } className = "text-white" />
-                ))
-}
-  </Tabs>
+            <>
+              <Tabs
+                value={activeTab}
+                onChange={(e, newValue) => setActiveTab(newValue)}
+                textColor="inherit"
+                indicatorColor="primary"
+                variant="scrollable"
+                scrollButtons="auto"
+                className="mb-4"
+              >
+                {departments.map((dept, idx) => (
+                  <Tab key={dept} label={dept} className="text-white" />
+                ))}
+              </Tabs>
 
-  <Box >
-{
-  departments.map((dept, index) =>
-    index === activeTab ? (
-      <Box key= { dept } >
-      {
-        Object.entries(groupedData[dept]).map(
-          ([position, candidates]) => (
-            <Accordion key= { position } className = " text-white mb-2" >
-            <AccordionSummary
-                              expandIcon={< ExpandMoreIcon className = "text-white" />}
-      >
-      <Typography className="font-semibold" >
-      { position.toUpperCase() }
-      </Typography>
-      </AccordionSummary>
-      < AccordionDetails >
-  <Box className="overflow-x-auto" >
-  <BarChart
-                                  xAxis={ [{ scaleType: 'band', data: candidates.map(c => c.candidate_name) }]}
-                                  series = { [{ data: candidates.map(c => c.votes), label: 'Votos' }]}
-                                  width = { 500}
-                                  height = { 300}
-
-    />
-    </Box>
-    </AccordionDetails>
-    </Accordion>
-  )
-                      )
-}
-</Box>
-                  ) : null
+              <Box>
+                {departments.map((dept, index) =>
+                  index === activeTab ? (
+                    <Box key={dept}>
+                      {Object.entries(groupedData[dept]).map(([position, candidates]) => (
+                        <Accordion key={position} className=" text-white mb-2">
+                          <AccordionSummary expandIcon={<ExpandMoreIcon className="text-white" />}>
+                            <Typography className="font-semibold">
+                              {position.toUpperCase()}
+                            </Typography>
+                          </AccordionSummary>
+                          <AccordionDetails>
+                            <Box className="overflow-x-auto">
+                              <BarChart
+                                xAxis={[
+                                  {
+                                    scaleType: 'band',
+                                    data: candidates.map((c) => c.candidate_name),
+                                  },
+                                ]}
+                                series={[{ data: candidates.map((c) => c.votes), label: 'Votos' }]}
+                                width={500}
+                                height={300}
+                              />
+                            </Box>
+                          </AccordionDetails>
+                        </Accordion>
+                      ))}
+                    </Box>
+                  ) : null,
                 )}
-</Box>
-  </>
+              </Box>
+            </>
           )}
-</CardContent>
-  </Card>
-
-  </Box>
+        </CardContent>
+      </Card>
+    </Box>
   );
 };
 

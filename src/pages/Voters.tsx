@@ -15,11 +15,12 @@ import {
   useTheme,
 } from '@mui/material';
 import { Alert, AlertColor } from '@mui/material';
+import { Switch } from '@mui/material';
 
-import { getUsers, createUsers } from './../services/supabaseService';
+import { getUsers, createUsers, updateUserState } from './../services/supabaseService';
 import { MailOutline, LockOutlined, BadgeOutlined, Padding } from '@mui/icons-material';
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
-import { useAuth } from './../context/AuthContext';
+import { useAuth } from './../AuthContext';
 import { useNavigate } from 'react-router-dom';
 const Voters = () => {
   const theme = useTheme();
@@ -31,6 +32,7 @@ const Voters = () => {
     password: '',
     sede: '',
     email: '',
+    type: '0',
   });
   const [users, setUsers] = useState([]);
   const [voters, setVoters] = useState([]);
@@ -49,11 +51,11 @@ const Voters = () => {
   };
   useEffect(() => {
     // Si no hay usuario autenticado, redirige a login
-    /*     if (!user) {
+    if (!user) {
       navigate('/login');
       return;
     }
- */
+
     loadUsers();
   }, []);
   const handleSubmit = async (e: React.FormEvent) => {
@@ -69,6 +71,7 @@ const Voters = () => {
         password: '',
         sede: '',
         email: '',
+        type: '0',
       });
       console.log('Votante creado:', result);
       await loadUsers();
@@ -87,6 +90,40 @@ const Voters = () => {
     { field: 'last_name', headerName: 'Apellido' },
     { field: 'dni', headerName: 'DNI' },
     { field: 'sede', headerName: 'Sede' },
+    {
+      field: 'type',
+      headerName: 'Tipo',
+      valueGetter: (type) => {
+        return type === '1' || type === 1 ? 'Administrador' : 'Votante';
+      },
+    },
+    {
+      field: 'state',
+      headerName: 'Estado',
+      width: 150,
+      renderCell: (params) => {
+        console.log(params.row.state);
+        const [checked, setChecked] = React.useState(params.row.state == true);
+
+        const handleChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+          try {
+            setChecked(event.target.checked);
+            await updateUserState({ id_user: params.row.id, state: event.target.checked });
+          } catch (error) {
+            console.error('Error al crear votante:', error);
+            setMessage({ type: 'error', text: 'Ocurrió un error al crear el votante.' });
+          }
+        };
+
+        return (
+          <Switch
+            checked={checked}
+            onChange={handleChange}
+            inputProps={{ 'aria-label': 'controlled' }}
+          />
+        );
+      },
+    },
   ];
   return (
     <div className="p-4">
@@ -144,6 +181,17 @@ const Voters = () => {
                 <MenuItem value="San Martin">San Martin</MenuItem>
                 <MenuItem value="Alto Cayma">Alto Cayma</MenuItem>
                 <MenuItem value="Buenos Aires">Buenos Aires</MenuItem>
+              </TextField>
+              <TextField
+                select
+                fullWidth
+                label="Tipo"
+                name="type"
+                value={formData.type}
+                onChange={handleChange}
+              >
+                <MenuItem value="0">Votante</MenuItem>
+                <MenuItem value="1">Admin</MenuItem>
               </TextField>
             </div>
 

@@ -1,13 +1,12 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import './index.css'
-import App from './App.tsx'
-import { configureStore } from "@reduxjs/toolkit";
-import globalReducer from "./state";
-import { Provider } from "react-redux";
-import { setupListeners } from "@reduxjs/toolkit/query";
-import { api } from "./state/api";
-
+import { createRoot } from 'react-dom/client';
+import './index.css';
+import App from './App.tsx';
+import { configureStore } from '@reduxjs/toolkit';
+import globalReducer from './state';
+import { Provider } from 'react-redux';
+import { setupListeners } from '@reduxjs/toolkit/query';
+import { api } from './state/api';
+import { AuthProvider } from './AuthContext';
 const store = configureStore({
   reducer: {
     global: globalReducer,
@@ -17,11 +16,10 @@ const store = configureStore({
 });
 setupListeners(store.dispatch);
 
-
 createRoot(document.getElementById('root')!).render(
-  <StrictMode>
+  <AuthProvider>
     <Provider store={store}>
       <App />
     </Provider>
-  </StrictMode>,
-)
+  </AuthProvider>,
+);

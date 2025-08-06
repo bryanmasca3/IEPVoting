@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Alert, AlertColor } from '@mui/material';
 import { TextField, Button, Box, useTheme } from '@mui/material';
+import { useAuth } from './../AuthContext';
 import {
   getDepartaments,
   createDepartament,
@@ -10,6 +11,7 @@ import {
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import { useNavigate } from 'react-router-dom';
 const DepartamentPositions = () => {
+  const { user } = useAuth(); // Usuario y método de logout desde el Context
   const theme = useTheme();
   const navigate = useNavigate();
   const [formDataDepartament, setFormDataDepartament] = useState({
@@ -41,6 +43,10 @@ const DepartamentPositions = () => {
   };
 
   useEffect(() => {
+    if (!user) {
+      navigate('/login');
+      return;
+    }
     loadDepartaments();
     loadPositions();
   }, []);
