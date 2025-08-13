@@ -13,18 +13,24 @@ import {
   TableRow,
   TableContainer,
   useTheme,
+  Typography,
 } from '@mui/material';
 import { Alert, AlertColor } from '@mui/material';
 import { Switch } from '@mui/material';
+import CustomModal from './components/ModalCustom';
 
-import { getUsers, createUsers, updateUserState } from './../services/supabaseService';
+import { getUsers, createUsers, updateUserState, deleteUsers } from './../services/supabaseService';
 import { MailOutline, LockOutlined, BadgeOutlined, Padding } from '@mui/icons-material';
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import { useAuth } from './../AuthContext';
 import { useNavigate } from 'react-router-dom';
+import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 const Voters = () => {
   const theme = useTheme();
   const navigate = useNavigate();
+  const [openDeleteModal, setOpenDeleteModal] = useState(false);
+  const [ToDelete, setToDelete] = useState(null);
+
   const [formData, setFormData] = useState({
     first_name: '',
     last_name: '',
@@ -39,7 +45,34 @@ const Voters = () => {
   const [message, setMessage] = useState<{ type: AlertColor; text: string } | null>(null);
 
   const { user, logout } = useAuth(); // Usuario y método de
-  //
+  const handleCloseDeleteModal = () => {
+    setOpenDeleteModal(false);
+    setToDelete(null);
+  };
+  const handleOpenDeleteModal = (candidate) => {
+    setToDelete(candidate);
+    setOpenDeleteModal(true);
+  };
+  const handleDeleteModal = async () => {
+    try {
+      console.log('Eliminando usuario:', ToDelete);
+      await deleteUsers(ToDelete.id);
+      setOpenDeleteModal(false);
+      setToDelete(null);
+      await loadUsers();
+
+      setMessage({ type: 'success', text: 'Usuario eliminado correctamente.' });
+      setTimeout(() => setMessage(null), 3000);
+    } catch (error) {
+      setOpenDeleteModal(false);
+      setToDelete(null);
+      setMessage({
+        type: 'error',
+        text: error.message || 'Hubo un error al eliminar el posicion.',
+      });
+      setTimeout(() => setMessage(null), 3000);
+    }
+  };
   const loadUsers = async () => {
     try {
       const data = await getUsers();
@@ -78,7 +111,7 @@ const Voters = () => {
       setMessage({ type: 'success', text: 'Votante creado correctamente.' });
     } catch (error) {
       console.error('Error al crear votante:', error);
-      setMessage({ type: 'error', text: 'Ocurrió un error al crear el votante.' });
+      setMessage({ type: 'error', text: error.message || 'Ocurrió un error al crear el votante.' });
     }
   };
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -86,21 +119,32 @@ const Voters = () => {
   };
 
   const columns: GridColDef[] = [
-    { field: 'first_name', headerName: 'Nombre' },
-    { field: 'last_name', headerName: 'Apellido' },
-    { field: 'dni', headerName: 'DNI' },
-    { field: 'sede', headerName: 'Sede' },
+    {
+      field: 'first_name',
+      headerName: 'Nombre',
+      flex: 1,
+      valueGetter: (data) => data.toUpperCase(),
+    },
+    {
+      field: 'last_name',
+      headerName: 'Apellido',
+      flex: 1,
+      valueGetter: (data) => data.toUpperCase(),
+    },
+    { field: 'dni', headerName: 'DNI', flex: 1, valueGetter: (data) => data.toUpperCase() },
+    { field: 'sede', headerName: 'Sede', flex: 1, valueGetter: (data) => data.toUpperCase() },
     {
       field: 'type',
       headerName: 'Tipo',
+      flex: 1,
       valueGetter: (type) => {
-        return type === '1' || type === 1 ? 'Administrador' : 'Votante';
+        return type === '1' || type === 1 ? 'ADMINISTRADOR' : 'VOTANTE';
       },
     },
     {
       field: 'state',
-      headerName: 'Estado',
-      width: 150,
+      headerName: 'Asistencia',
+      width: 80,
       renderCell: (params) => {
         console.log(params.row.state);
         const [checked, setChecked] = React.useState(params.row.state == true);
@@ -124,6 +168,18 @@ const Voters = () => {
         );
       },
     },
+    {
+      field: '-',
+      headerName: '',
+      width: 80,
+      sortable: false,
+      renderCell: (params) => (
+        <DeleteForeverIcon
+          onClick={() => handleOpenDeleteModal(params.row)}
+          sx={{ cursor: 'pointer' }}
+        />
+      ),
+    },
   ];
   return (
     <div className="p-4">
@@ -136,6 +192,19 @@ const Voters = () => {
           {message.text}
         </Alert>
       )}
+      <CustomModal open={openDeleteModal} onClose={handleCloseDeleteModal} width={400}>
+        <Typography variant="h6" className="mb-4">
+          ¿Estás seguro que deseas eliminar la posicion?
+        </Typography>
+        <Box className="flex justify-end gap-4">
+          <Button variant="contained" color="error" onClick={handleDeleteModal}>
+            Eliminar
+          </Button>
+          <Button variant="outlined" onClick={handleCloseDeleteModal}>
+            Cancelar
+          </Button>
+        </Box>
+      </CustomModal>
       <Box className="flex flex-col gap-4">
         <Box sx={{ backgroundColor: theme.palette.background.alt, padding: '1rem' }}>
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">

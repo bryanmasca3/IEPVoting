@@ -22,6 +22,128 @@ export const getTypeVoting = async () => {
   return data;
 };
 // supabaseService.js
+
+export const deleteUsers = async (userId) => {
+  console.log('Deleting position with ID:', userId);
+  const { data, error } = await supabase.from('votes').select(`*`).eq('voter_id', userId);
+  if (error) {
+    throw error;
+  }
+  if (data.length > 0) {
+    throw new Error('No se puede eliminar el usuario porque tiene votos asociados.');
+  }
+  const { data: candidatesData, error: deleteError } = await supabase
+    .from('candidates')
+    .select(`*`)
+    .eq('user_id', userId);
+
+  if (deleteError) {
+    throw deleteError;
+  }
+  if (candidatesData.length > 0) {
+    throw new Error('No se puede eliminar el usuario porque es un candidato.');
+  }
+
+  const { error: deletePositionError } = await supabase.from('users').delete().eq('id', userId);
+
+  if (deletePositionError) {
+    throw deletePositionError;
+  }
+  return true;
+};
+export const deleteDepartament = async (departamentId) => {
+  console.log('Deleting position with ID:', departamentId);
+  const { data, error } = await supabase.from('votes').select(`*`).eq('group_id', departamentId);
+  if (error) {
+    throw error;
+  }
+  if (data.length > 0) {
+    throw new Error('No se puede eliminar la departamento porque tiene votos asociados.');
+  }
+  const { data: candidatesData, error: deleteError } = await supabase
+    .from('candidates')
+    .select(`*`)
+    .eq('group_id', departamentId);
+
+  if (deleteError) {
+    throw deleteError;
+  }
+  if (candidatesData.length > 0) {
+    throw new Error('No se puede eliminar la departamento porque tiene candidatos asociados.');
+  }
+  const { error: deleteConfigurationError } = await supabase
+    .from('configuration')
+    .delete()
+    .eq('group_id', departamentId);
+
+  if (deleteConfigurationError) {
+    throw deleteConfigurationError;
+  }
+
+  const { error: deletePositionError } = await supabase
+    .from('groups')
+    .delete()
+    .eq('id', departamentId);
+
+  if (deletePositionError) {
+    throw deletePositionError;
+  }
+  return true;
+};
+export const deletePositions = async (positionsId) => {
+  console.log('Deleting position with ID:', positionsId);
+  const { data, error } = await supabase.from('votes').select(`*`).eq('position_id', positionsId);
+  if (error) {
+    throw error;
+  }
+  if (data.length > 0) {
+    throw new Error('No se puede eliminar la posición porque tiene votos asociados.');
+  }
+  const { data: candidatesData, error: deleteError } = await supabase
+    .from('candidates')
+    .select(`*`)
+    .eq('position_id', positionsId);
+
+  if (deleteError) {
+    throw deleteError;
+  }
+  if (candidatesData.length > 0) {
+    throw new Error('No se puede eliminar la posición porque tiene candidatos asociados.');
+  }
+  const { error: deleteConfigurationError } = await supabase
+    .from('configuration')
+    .delete()
+    .eq('position_id', positionsId);
+
+  if (deleteConfigurationError) {
+    throw deleteConfigurationError;
+  }
+
+  const { error: deletePositionError } = await supabase
+    .from('positions')
+    .delete()
+    .eq('id', positionsId);
+
+  if (deletePositionError) {
+    throw deletePositionError;
+  }
+  return true;
+};
+export const deleteCandidate = async (candidateId) => {
+  const { data, error } = await supabase.from('votes').select(`*`).eq('candidate_id', candidateId);
+  console.log('Votes for candidate:', data); // Agregado para
+  if (error) {
+    throw error;
+  }
+  if (data.length > 0) {
+    throw new Error('No se puede eliminar el candidato porque tiene votos asociados.');
+  }
+  const { error: deleteError } = await supabase.from('candidates').delete().eq('id', candidateId);
+  if (deleteError) {
+    throw deleteError;
+  }
+  return true;
+};
 export const deleteVoteForCandidate = async (voteId) => {
   const { error } = await supabase
     .from('votes') // o el nombre de tu tabla de votos
@@ -59,6 +181,17 @@ export const createUsers = async ({
   sede: string;
   type: number;
 }) => {
+  const { data: dataUser, error: dataError } = await supabase
+    .from('users')
+    .select(`*`)
+    .eq('dni', dni.trim().toLowerCase());
+
+  if (dataError) {
+    throw dataError;
+  }
+  if (dataUser.length > 0) {
+    throw new Error('El usuario ya existe.');
+  }
   const { error } = await supabase.from('users').insert([
     {
       first_name: first_name.trim().toLowerCase(),
@@ -74,6 +207,17 @@ export const createUsers = async ({
   return true;
 };
 export const createDepartament = async ({ name }: { name: string }) => {
+  const { data: dataDepartament, error: dataError } = await supabase
+    .from('groups')
+    .select(`*`)
+    .eq('name', name.trim().toLowerCase());
+
+  if (dataError) {
+    throw dataError;
+  }
+  if (dataDepartament.length > 0) {
+    throw new Error('El departamento ya existe.');
+  }
   const { error } = await supabase.from('groups').insert([
     {
       name: name.trim().toLowerCase(),
@@ -86,6 +230,18 @@ export const createDepartament = async ({ name }: { name: string }) => {
 };
 
 export const createPosition = async ({ name }: { name: string }) => {
+  const { data: dataPosition, error: dataError } = await supabase
+    .from('positions')
+    .select(`*`)
+    .eq('name', name.trim().toLowerCase());
+
+  if (dataError) {
+    throw dataError;
+  }
+  if (dataPosition.length > 0) {
+    throw new Error('El posicion ya existe.');
+  }
+
   const { error } = await supabase.from('positions').insert([
     {
       name: name.trim().toLowerCase(),

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import supabase from '../supabase-client';
 import { useAuth } from './../AuthContext';
 import profileImage from './assets/profile.jpeg';
+import HighlightOffIcon from '@mui/icons-material/HighlightOff';
 import {
   fetchCandidates,
   createConfigurationMaxVotes,
@@ -11,6 +12,7 @@ import {
   createCandidates,
   getGroups,
   getPositions,
+  deleteCandidate,
 } from './../services/supabaseService';
 import {
   Card,
@@ -43,6 +45,9 @@ const Configuration = () => {
   const [modalGroupId, setModalGroupId] = useState(null);
   const [modalPositionId, setModalPositionId] = useState(null);
 
+  const [openDeleteModal, setOpenDeleteModal] = useState(false);
+  const [candidateToDelete, setCandidateToDelete] = useState(null);
+
   const location = useLocation();
   const { user, logout } = useAuth(); // Usuario y método de logout desde el Context
   const [users, setUsers] = useState([]);
@@ -59,6 +64,35 @@ const Configuration = () => {
   const [inputs, setInputs] = useState<{ positionId: string; groupId: string; value: string }[]>(
     [],
   );
+
+  const handleOpenDeleteModal = (candidate) => {
+    setCandidateToDelete(candidate);
+    setOpenDeleteModal(true);
+  };
+
+  // Handler para cerrar el modal
+  const handleCloseDeleteModal = () => {
+    setOpenDeleteModal(false);
+    setCandidateToDelete(null);
+  };
+
+  // Handler para eliminar (aquí deberías poner tu lógica de borrado)
+  const handleDeleteCandidate = async () => {
+    try {
+      await deleteCandidate(candidateToDelete.id);
+      setOpenDeleteModal(false);
+      setCandidateToDelete(null);
+      setShowSuccess(true);
+      setTimeout(() => setShowSuccess(false), 3000);
+      await loadData();
+    } catch (error) {
+      console.error('Error al eliminar candidato:', error);
+      setOpenDeleteModal(false);
+      setCandidateToDelete(null);
+      setErrorMessage(error.message || 'Hubo un error al eliminar el candidato.');
+      setTimeout(() => setErrorMessage(false), 3000);
+    }
+  };
 
   const navigate = useNavigate();
   const loadCandidates = async () => {
@@ -261,7 +295,14 @@ const Configuration = () => {
                   .filter((candidate) => candidate.positions.name === positionName)
                   .map((candidate) => (
                     <Card key={candidate.id} sx={{ backgroundColor: theme.palette.background.alt }}>
-                      <CardContent className="flex flex-col items-center gap-4 shadow-md cursor-pointer">
+                      <CardContent className="flex flex-col items-center gap-4 shadow-md relative">
+                        <Box
+                          className="absolute top-2 right-2 z-50"
+                          onClick={() => handleOpenDeleteModal(candidate)}
+                          sx={{ cursor: 'pointer' }}
+                        >
+                          <HighlightOffIcon />
+                        </Box>
                         <Box
                           component="img"
                           alt="profile"
@@ -339,6 +380,20 @@ const Configuration = () => {
           </Button>
           <Button variant="contained" color="primary" onClick={() => setOpenModal(false)}>
             Cerrar
+          </Button>
+        </Box>
+      </CustomModal>
+
+      <CustomModal open={openDeleteModal} onClose={handleCloseDeleteModal} width={400}>
+        <Typography variant="h6" className="mb-4">
+          ¿Estás seguro que deseas eliminar este candidato?
+        </Typography>
+        <Box className="flex justify-end gap-4">
+          <Button variant="contained" color="error" onClick={handleDeleteCandidate}>
+            Eliminar
+          </Button>
+          <Button variant="outlined" onClick={handleCloseDeleteModal}>
+            Cancelar
           </Button>
         </Box>
       </CustomModal>
