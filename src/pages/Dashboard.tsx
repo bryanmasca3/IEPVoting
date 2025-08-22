@@ -9,6 +9,8 @@ import {
   getVoteForUser,
   deleteVoteForCandidate,
   getConfigurations,
+  finishVote,
+  getVoteState
 } from './../services/supabaseService';
 import {
   Card,
@@ -36,6 +38,7 @@ const Dashboard = () => {
   const [candidates, setCandidates] = useState([]);
   const [votes, setVotes] = useState([]); // Estado para almacenar los votos
   const [activeDept, setActiveDept] = useState(''); // Departamento activo
+  const [voteState, setVoteState] = useState(null); // Estado de la votación
   const [errorMessage, setErrorMessage] = useState(null);
   const navigate = useNavigate();
   const [inputs, setInputs] = useState<{ positionId: string; groupId: string; value: string }[]>(
@@ -51,6 +54,19 @@ const Dashboard = () => {
       console.error('Error al obtener candidatos:', error);
     }
   };
+  const handleFinishVote = async () => {
+        try {
+            if (!user) {
+              alert('Debes estar autenticado para votar y/o ingresa nuevamente.');
+              return;
+            }
+            //console.log('Finalizando votación para el usuario:', user.id);
+            await finishVote(user.id);
+
+          } catch (error) {
+          console.error('Error al obtener candidatos:', error);
+        }
+      };
   const fetchConfigurations = async () => {
     try {
       const data = await getConfigurations();
@@ -75,20 +91,34 @@ const Dashboard = () => {
       console.error('Error al obtener candidatos:', error);
     }
   };
+
+  const loadStateVote = async () => {
+    try {
+      const data = await getVoteState(user.id);
+      console.log('Estado de la votación:', data); // Agregado para depuración
+      setVoteState(data);
+    } catch (error) {
+      console.error('Error al cargar el estado de la votación:', error);      
+    }
+  }
   useEffect(() => {
     // Si no hay usuario autenticado, redirige a login
-    if (!user) {
+   /*  if (!user) {
       navigate('/login');
       return;
-    }
+    } */
 
     // Función para obtener candidatos
-
+    loadStateVote();
     loadVotes();
     loadCandidates();
     fetchConfigurations();
-  }, []);
-
+  }, [voteState]);
+const handleClose = async () => {
+    await logout();
+    navigate('/login');
+    setAnchorEl(null);
+  };
   // Cuando se carguen candidatos, si no hay departamento activo, se establece el primero disponible.
   useEffect(() => {
     if (candidates.length > 0 && !activeDept) {
@@ -153,8 +183,9 @@ const Dashboard = () => {
   // Obtenemos la lista de departamentos únicos
   const departments = Array.from(new Set(candidates.map((candidate) => candidate.groups.name)));
   const activeIndex = departments.indexOf(activeDept);
-  return (
-    <div className="p-4">
+  return (<>
+    {voteState?!voteState.state?
+    (<div className="p-4">
       {/* Tabs para departamentos */}
       {departments.length > 0 && (
         <Tabs
@@ -300,7 +331,7 @@ const Dashboard = () => {
     // Si es el último, mostramos Terminar
     <Button
        variant="contained"      
-      onClick={() => alert("Proceso terminado 🚀")}
+      onClick={() => handleFinishVote(null)} // Aquí puedes definir la acción que quieres al terminar
       sx={{
         marginTop: '1rem',
         fontSize: '1.2rem',
@@ -320,7 +351,29 @@ const Dashboard = () => {
           No hay candidatos disponibles en este departamento.
         </Typography>
       )}
-    </div>
+    </div>):(<Box lassName="p-4" display={'flex'} flexDirection="column" alignItems="center" justifyContent="center">
+      <Typography variant="h4" className="text-white p-4">
+        La votación ha finalizado. Gracias por participar.
+      </Typography>
+      <Button
+        variant="contained"
+        color="primary"
+        onClick={handleClose}
+        sx={{
+          marginTop: '1rem',
+          fontSize: '1.2rem',
+          fontWeight: 'bold',
+          color: "#000",
+          backgroundColor: theme.palette.secondary.main,
+        }}
+      >
+        Cerrar session
+      </Button>
+    </Box>):(<Box className="p-4" display={'flex'} flexDirection="column" alignItems="center" justifyContent="center">
+      <Typography variant="h4" className="text-white">
+        Usted tiene que estar con asistencia para votar. Contactate con el administrador.
+      </Typography></Box>)}
+      </>
   );
 };
 

@@ -146,8 +146,10 @@ const Voters = () => {
       headerName: 'Asistencia',
       width: 80,
       renderCell: (params) => {
-        console.log(params.row.state);
-        const [checked, setChecked] = React.useState(params.row.state == true);
+        console.log(params.row.users_votes);
+       const [checked, setChecked] = React.useState(
+  Array.isArray(params.row.users_votes) && params.row.users_votes.length > 0
+);
 
         const handleChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
           try {

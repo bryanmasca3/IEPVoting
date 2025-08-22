@@ -155,18 +155,63 @@ export const deleteVoteForCandidate = async (voteId) => {
   }
   return true;
 };
-export const updateUserState = async ({ id_user, state }: { id_user: string; state: boolean }) => {
-  console.log(id_user, state);
-  const { error } = await supabase
-    .from('users')
-    .update({ state }) // <-- Actualiza solo el campo 'state'
-    .eq('id', id_user); // <-- Filtro por 'id_user'
+export const getVoteState = async (userId:string) => {
+  const {  data,error } = await supabase
+    .from('users_votes')
+    .select('*')
+    .eq('id_voter', userId)
+    .single();
+
+  if (error) {
+    throw error;
+  }
+  
+
+  return data;
+}
+export const finishVote = async (user_id:string) => {
+  console.log('Finalizando votación para el usuario:', user_id);
+    const { error } = await supabase
+    .from('users_votes')
+    .update({ state:true }) 
+    .eq('id_voter', user_id);
 
   if (error) {
     throw error;
   }
 
   return true;
+
+  };
+
+export const updateUserState = async ({ id_user, state }: { id_user: string; state: boolean }) => {
+  if(state ==true) {
+  
+const { error } = await supabase.from('users_votes').insert([
+    {
+      id_voter: id_user,      
+    },
+  ]);
+
+  if (error) {
+    throw error;
+  }
+
+  
+   
+  } else {
+     const { error } = await supabase
+    .from('users_votes') 
+    .delete()
+    .eq('id_voter', id_user);
+
+  if (error) {
+    throw error;
+  }
+  
+  }
+  return true
+
 };
 export const createUsers = async ({
   first_name,
@@ -192,7 +237,7 @@ export const createUsers = async ({
   if (dataUser.length > 0) {
     throw new Error('El usuario ya existe.');
   }
-  const { error } = await supabase.from('users').insert([
+  const { data:createdUser, error } = await supabase.from('users').insert([
     {
       first_name: first_name.trim().toLowerCase(),
       last_name: last_name.trim().toLowerCase(),
@@ -200,11 +245,22 @@ export const createUsers = async ({
       sede: sede.trim().toLowerCase(),
       type: type,
     },
-  ]);
+  ]).select();
+
   if (error) {
     throw error;
   }
-  return true;
+  
+   const { error:errorResponse } = await supabase.from('users_votes').insert([
+    {
+      id_voter: createdUser[0].id,      
+    },
+  ]);
+
+  if (errorResponse) {
+    throw error;
+  }
+  return createdUser;
 };
 export const createDepartament = async ({ name }: { name: string }) => {
   const { data: dataDepartament, error: dataError } = await supabase
@@ -288,8 +344,10 @@ export const createCandidates = async (newCandidates) => {
 };
 
 export const getUsers = async () => {
-  const { data, error } = await supabase.from('users').select(`*`);
-
+  const { data, error } = await supabase.from('users').select(`id
+    , first_name, last_name, dni, sede, type, users_votes(id_voter, state)`);
+  
+    console.log('Users data:', data); // Agregado para depuración
   if (error) {
     throw error;
   }
