@@ -38,9 +38,9 @@ function App() {
 
               <Route element={<Layout />}>
                 <Route path="/" element={<Welcome />} />
-                <Route path="/votes" element={<Dashboard />} />
-                <Route path="/results" element={<Votes />} />
+                <Route path="/votes" element={<Dashboard />} />             
                 <Route element={<PrivateRoute allowedRoles={[1]} />}>
+                  <Route path="/results" element={<Votes />} />
                   <Route path="/configuration" element={<Configuration />} />
                   <Route path="/votantes" element={<Voters />} />
                   <Route path="/groupsposiciones" element={<DepartamentPositions />} />

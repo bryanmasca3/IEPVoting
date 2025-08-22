@@ -53,17 +53,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, []);
 
-  const login = async (dni: string, password: string) => {
+  const login = async (dni: string/*, password: string*/) => {
     // Aquí va tu lógica de login con Supabase
     const { data, error } = await supabase.from('users').select('*').eq('dni', dni).single();
 
     if (error || !data) {
       return { error: { message: 'Usuario no encontrado' } };
     }
-
+/*
     if (data.dni !== password) {
       return { error: { message: 'Contraseña incorrecta' } };
-    }
+    }*/
 
     setUser(data);
     setItemWithExpiry('user', data, 30 * 60 * 1000); // 30 minutos

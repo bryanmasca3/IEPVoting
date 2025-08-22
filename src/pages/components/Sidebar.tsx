@@ -56,7 +56,7 @@ const navItems = [
     text: 'Resultados',
     url: 'results',
     icon: <Groups2Outlined />,
-    userVoting: true,
+    userVoting: false,
   },
   {
     text: 'Configuraciones',

@@ -7,7 +7,7 @@ import { Alert } from '@mui/material';
 
 const Login = () => {
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  //const [password, setPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
 
   const navigate = useNavigate(); // Hook para redirigir
@@ -21,7 +21,7 @@ const Login = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const { error } = await login(email, password); // Ejecuta el login desde el contexto
+    const { error } = await login(email/*, password*/); // Ejecuta el login desde el contexto
     if (error) {
       setErrorMessage(error.message);
       return;
@@ -56,24 +56,25 @@ const Login = () => {
       <div className="md:w-1/2 w-full flex items-center justify-center p-10">
         <div className=" bg-white text-black shadow-md rounded px-8 pt-6 pb-8  w-full max-w-md">
           <div className="mb-6">
-            <h3 className="text-2xl font-bold mb-2">Iniciar sesión</h3>
-            <p>Ingresa tus datos para iniciar sesión.</p>
+            <h3 className="text-3xl font-bold mb-2">Iniciar sesión</h3>
+            <p className='text-lg font-normal'>Ingresa tus datos para iniciar sesión.</p>
           </div>
 
           <form onSubmit={handleSubmit}>
-            <Box display="flex" flexDirection="column" gap={2}>
+            <Box display="flex" flexDirection="column" gap={2}
+           >
               <TextField
-                type="text"
+                type="number"
                 label="DNI"
                 variant="standard"
                 InputProps={{ style: { color: '#000' } }}
-                InputLabelProps={{ style: { color: '#000' } }}
+                InputLabelProps={{ style: { color: '#000',fontSize:"1.2rem" } }}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
               />
 
-              <TextField
+             {/*  <TextField
                 type="password"
                 label="Contraseña"
                 InputProps={{ style: { color: '#000' } }}
@@ -82,13 +83,16 @@ const Login = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-              />
+              /> */}
               {errorMessage && (
                 <Alert severity="error" className="mb-4 bg-red-600">
                   {errorMessage}
                 </Alert>
               )}
-              <Button type="submit" variant="contained" color="primary">
+              <Button type="submit" variant="contained" color="primary" sx={{
+                fontSize: '1.0rem',
+                fontWeight: 'bold',
+              }}>
                 Ingresar
               </Button>
             </Box>

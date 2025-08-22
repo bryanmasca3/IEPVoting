@@ -23,9 +23,13 @@ import {
   AccordionDetails,
   useTheme,
 } from '@mui/material';
+import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore';
+import NavigateNextIcon from '@mui/icons-material/NavigateNext';
+import CheckBoxIcon from '@mui/icons-material/CheckBox';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { Alert } from '@mui/material';
 import { BorderColor } from '@mui/icons-material';
+import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 const Dashboard = () => {
   const theme = useTheme();
   const { user, logout } = useAuth(); // Usuario y método de logout desde el Context
@@ -148,7 +152,7 @@ const Dashboard = () => {
 
   // Obtenemos la lista de departamentos únicos
   const departments = Array.from(new Set(candidates.map((candidate) => candidate.groups.name)));
-
+  const activeIndex = departments.indexOf(activeDept);
   return (
     <div className="p-4">
       {/* Tabs para departamentos */}
@@ -161,6 +165,20 @@ const Dashboard = () => {
           variant="scrollable"
           scrollButtons="auto"
           className="mb-4 "
+          sx={{
+            "& .MuiTab-root": {
+              fontSize: "1.0rem", // tamaño de texto general             
+              fontWeight: 300,
+              textTransform: "uppercase",
+            },
+            "& .Mui-selected": {            
+              fontWeight: 700,
+              color: "#000", // color más llamativo
+              borderTopLeftRadius: "12px",
+              borderTopRightRadius: "12px",
+              backgroundColor: theme.palette.secondary.main,
+            },
+          }}
         >
           {departments.map((dept) => (
             <Tab key={dept} label={dept} value={dept} />
@@ -177,7 +195,7 @@ const Dashboard = () => {
               backgroundColor: theme.palette.background.alt, // Cambia este valor por el color deseado
             }}
           >
-            <Typography variant="h6" className="text-white">
+            <Typography variant="h5" className="text-white uppercase">
               {position}
             </Typography>
           </AccordionSummary>
@@ -192,46 +210,38 @@ const Dashboard = () => {
                 const isVoted = votes.some((vote) => vote.candidate_id === candidate.id);
 
                 return (
-                  <Card key={candidate.id} onClick={() => handleVote(candidate)}>
+                  <Card key={candidate.id} onClick={() => handleVote(candidate)} sx={{
+                    backgroundColor: isVoted? theme.palette.primary[800]: theme.palette.primary[600],
+                    border: isVoted
+                      ? `3px solid ${theme.palette.secondary.main}`
+                      : `3px solid ${theme.palette.primary[600]}`,
+                  }}>
                     <CardContent
-                      className={`flex flex-col items-center gap-4 shadow-md cursor-pointer`}
-                      sx={{
-                        backgroundColor: theme.palette.primary[600],
-                        border: isVoted
-                          ? `3px solid ${theme.palette.primary[300]}`
-                          : `3px solid ${theme.palette.primary[600]}`,
-                      }}
+                      className={`flex flex-col items-center gap-4  cursor-pointer`}
+                     
                     >
                       <Box
                         component="img"
                         alt="profile"
                         src={profileImage}
-                        height="150px"
-                        width="150px"
+                        height="200px"
+                        width="200px"
                         borderRadius="50%"
                         sx={{ objectFit: 'cover' }}
                       />
-                      <Typography variant="subtitle1" className="font-semibold">
-                        <span className="font-normal uppercase">
+                      <Typography variant="h3" className=" text-7xl uppercase" sx={{
+                        fontWeight:700
+                      }}>
+                       {/*  <span className="font-normal "> */}
                           {candidate.users.first_name + ' ' + candidate.users.last_name}
-                        </span>
+                     {/*    </span> */}
                       </Typography>
-                      <Typography variant="subtitle1" className="font-semibold">
+                      <Typography variant="h5" className="font-semibold">
                         Sede: <span className="font-normal capitalize">{candidate.users.sede}</span>
                       </Typography>
-                      <div className="mt-4">
-                        <Button
-                          variant="contained"
-                          fullWidth
-                          className={`${
-                            isVoted
-                              ? 'bg-gray-500 hover:bg-gray-500'
-                              : 'bg-blue-600 hover:bg-blue-700'
-                          } text-white font-bold`}
-                        >
-                          {isVoted ? 'Votado' : 'Votar'}
-                        </Button>
-                      </div>
+                      <Box>                      
+                        {isVoted?<CheckBoxIcon sx={{ fontSize: 40 }} />:<CheckBoxOutlineBlankIcon  sx={{ fontSize: 40 }} />}
+                      </Box>
                     </CardContent>
                   </Card>
                 );
@@ -247,7 +257,63 @@ const Dashboard = () => {
           </AccordionDetails>
         </Accordion>
       ))}
-
+      <Box className="flex justify-center gap-4">
+        <Button
+          variant="outlined"
+          color="primary"
+          startIcon={<NavigateBeforeIcon />}          
+          disabled={activeIndex <= 0}
+          onClick={() => {if (activeIndex > 0) {
+            setActiveDept(departments[activeIndex - 1]);
+          }}}
+          sx={{
+            marginTop: '1rem',
+            fontSize: '1.2rem',
+            fontWeight: 'bold',
+            color: theme.palette.secondary.main,
+            borderColor: theme.palette.secondary.main,
+          }}
+        >
+        Anterior
+        </Button>
+        {activeIndex < departments.length - 1 ? (
+    <Button
+      variant="outlined"
+      color="primary"
+      endIcon={<NavigateNextIcon />}
+      onClick={() => {
+        if (activeIndex < departments.length - 1) {
+          setActiveDept(departments[activeIndex + 1]);
+        }
+      }}
+      sx={{
+        marginTop: '1rem',
+        fontSize: '1.2rem',
+        fontWeight: 'bold',
+        color: theme.palette.secondary.main,
+        borderColor: theme.palette.secondary.main,
+      }}
+    >
+      Siguiente
+    </Button>
+  ) : (
+    // Si es el último, mostramos Terminar
+    <Button
+       variant="contained"      
+      onClick={() => alert("Proceso terminado 🚀")}
+      sx={{
+        marginTop: '1rem',
+        fontSize: '1.2rem',
+        fontWeight: 'bold',
+        color: "#000",
+        borderColor: theme.palette.secondary.main,
+        backgroundColor: theme.palette.secondary.main,
+      }}
+    >
+      Terminar
+    </Button>
+  )}
+      </Box>
       {/* Si no hay candidatos en el departamento seleccionado */}
       {filteredCandidates.length === 0 && (
         <Typography variant="body1" className="text-white">
