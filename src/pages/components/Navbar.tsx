@@ -33,6 +33,7 @@ const Navbar = ({ isSidebarOpen, setIsSidebarOpen }) => {
   const [anchorEl, setAnchorEl] = useState(null);
   const isOpen = Boolean(anchorEl);
   const handleClick = (event) => setAnchorEl(event.currentTarget);
+  console.log('user', user);
   const handleClose = async () => {
     await logout();
     navigate('/login');
@@ -57,14 +58,14 @@ const Navbar = ({ isSidebarOpen, setIsSidebarOpen }) => {
 
         {/* RIGHT SIDE */}
         <FlexBetween gap="1.5rem">
-          <IconButton onClick={() => dispatch(setMode())}>
+         {/*  <IconButton onClick={() => dispatch(setMode())}>
             {theme.palette.mode === 'dark' ? (
               <DarkModeOutlined sx={{ fontSize: '25px' }} />
             ) : (
               <LightModeOutlined sx={{ fontSize: '25px' }} />
             )}
           </IconButton>
-
+ */}
           <FlexBetween>
             <Button
               onClick={handleClick}
@@ -91,7 +92,7 @@ const Navbar = ({ isSidebarOpen, setIsSidebarOpen }) => {
                   fontSize="0.85rem"
                   sx={{ color: theme.palette.secondary[100] }}
                 >
-                  {user ? user.email : 'Cargando'}
+                  {user ? user.first_name + " "+ user.last_name : 'Cargando'}
                 </Typography>
                 <Typography fontSize="0.75rem" sx={{ color: theme.palette.secondary[200] }}>
                   hermano
@@ -107,7 +108,7 @@ const Navbar = ({ isSidebarOpen, setIsSidebarOpen }) => {
               onClose={() => setAnchorEl(null)}
               anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
             >
-              <MenuItem onClick={handleClose}> Log Out </MenuItem>
+              <MenuItem onClick={handleClose}> Salir </MenuItem>
             </Menu>
           </FlexBetween>
         </FlexBetween>

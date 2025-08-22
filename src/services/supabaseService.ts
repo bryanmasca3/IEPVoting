@@ -379,6 +379,15 @@ export const getVoteForUser = async (userId) => {
   }
   return data;
 };
+
+export const get_count_voters = async()=>{
+  const {data,error}=await supabase.rpc('count_voters').single();
+   console.log('Conteos de votos:', data); // Agregado para depuración
+  if (error) {
+    throw error;
+  }
+  return data;
+}
 // Función para obtener los conteos de votos llamando a la función RPC
 export const fetchVoteCounts = async () => {
   const { data, error } = await supabase.rpc('get_vote_counts_details');

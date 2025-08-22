@@ -227,7 +227,7 @@ const handleClose = async () => {
             }}
           >
             <Typography variant="h5" className="text-white uppercase">
-              {position}
+              {position.toLocaleUpperCase()}
             </Typography>
           </AccordionSummary>
           <AccordionDetails
