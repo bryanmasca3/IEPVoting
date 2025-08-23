@@ -1,8 +1,8 @@
 import { CssBaseline, ThemeProvider } from '@mui/material';
 import { createTheme } from '@mui/material/styles';
 import './App.css';
-import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
-import { AuthProvider } from './context/AuthContext';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { AuthProvider } from './AuthContext';
 import { useMemo } from 'react';
 
 import { useSelector } from 'react-redux';
@@ -17,7 +17,8 @@ import Configuration from './pages/Configuration';
 import Welcome from './pages/Welcome';
 import DepartamentPositions from './pages/DepartamentPositions';
 import Voters from './pages/Voters';
-import PrivateRoute from './pages/components/PrivateRoute'; // Importa el componente nuevo
+import Audit from './pages/Audit';
+import PrivateRoute from './pages/components/PrivateRoute'; 
 
 import Unauthorized from './pages/Unauthorized';
 
@@ -35,16 +36,18 @@ function App() {
               <Route path="/login" element={<Login />} />
               <Route path="*" element={<Page404 />} />
               <Route path="/unauthorized" element={<Unauthorized />} />
-
+             <Route element={<PrivateRoute />}>
               <Route element={<Layout />}>
                 <Route path="/" element={<Welcome />} />
                 <Route path="/votes" element={<Dashboard />} />             
                 <Route element={<PrivateRoute allowedRoles={[1]} />}>
                   <Route path="/results" element={<Votes />} />
+                  <Route path="/audit" element={<Audit />} />
                   <Route path="/configuration" element={<Configuration />} />
                   <Route path="/votantes" element={<Voters />} />
                   <Route path="/groupsposiciones" element={<DepartamentPositions />} />
                 </Route>
+              </Route>
               </Route>
             </Routes>
           </AuthProvider>

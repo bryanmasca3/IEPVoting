@@ -169,8 +169,7 @@ export const getVoteState = async (userId:string) => {
 
   return data;
 }
-export const finishVote = async (user_id:string) => {
-  console.log('Finalizando votación para el usuario:', user_id);
+export const finishVote = async (user_id:string) => {  
     const { error } = await supabase
     .from('users_votes')
     .update({ state:true }) 
@@ -262,7 +261,7 @@ export const createUsers = async ({
   }
   return createdUser;
 };
-export const createDepartament = async ({ name }: { name: string }) => {
+export const createDepartament = async ({ name,type }: { name: string,type:number }) => {
   const { data: dataDepartament, error: dataError } = await supabase
     .from('groups')
     .select(`*`)
@@ -277,6 +276,7 @@ export const createDepartament = async ({ name }: { name: string }) => {
   const { error } = await supabase.from('groups').insert([
     {
       name: name.trim().toLowerCase(),
+      type:type
     },
   ]);
   if (error) {
@@ -380,6 +380,15 @@ export const getVoteForUser = async (userId) => {
   return data;
 };
 
+export const get_all_votes=async()=>{
+  
+  const {data,error}=await supabase.rpc('votes_audit');
+   console.log('Conteos de votos:', data); // Agregado para depuración
+  if (error) {
+    throw error;
+  }
+  return data;
+}
 export const get_count_voters = async()=>{
   const {data,error}=await supabase.rpc('count_voters').single();
    console.log('Conteos de votos:', data); // Agregado para depuración
@@ -399,7 +408,7 @@ export const fetchVoteCounts = async () => {
 };
 
 // Función para suscribirse a cambios en la tabla votes
-export const subscribeToVotes = (callback) => {
+/*export const subscribeToVotes = (callback) => {
   const subscription = supabase
     .channel('votes-channel')
     .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'votes' }, (payload) => {
@@ -416,3 +425,4 @@ export const subscribeToVotes = (callback) => {
 export const removeSubscription = (subscription) => {
   supabase.removeChannel(subscription);
 };
+*/

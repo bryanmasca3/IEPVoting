@@ -59,6 +59,12 @@ const navItems = [
     userVoting: false,
   },
   {
+    text: 'Auditoria',
+    url: 'audit',
+    icon: <Groups2Outlined />,
+    userVoting: false,
+  },
+  {
     text: 'Configuraciones',
     icon: null,
     userVoting: false,

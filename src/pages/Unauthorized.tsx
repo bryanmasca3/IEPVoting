@@ -5,7 +5,7 @@ import logoImage from './../assets/logo.png';
 const Unauthorized = () => {
   const navigate = useNavigate();
   const handleGoBack = () => {
-    navigate('/login'); // Puedes cambiar "/login" por la ruta que prefieras
+    navigate('/login'); 
   };
   return (
     <div className="flex flex-col md:flex-row">

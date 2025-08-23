@@ -1,25 +1,18 @@
-import { useEffect } from 'react';
 import logoImage from './../assets/logo.png';
-import { useAuth } from './../AuthContext';
-import { Box,Button } from '@mui/material';
+import { Box,Button,useTheme } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+
 const Welcome = () => {
   const navigate = useNavigate();
-  const { user, logout } = useAuth(); // Usuario y método de
-  useEffect(() => {
-    if (!user) {
-      navigate('/login');
-      return;
-    }
-  }, []);
-
+  const theme = useTheme();
+  
   const handleClick = () => {
     navigate("/votes"); 
   };
   return (
-    <div className="flex flex-col md:flex-row">
+    <div className="flex flex-col md:flex-row ">
       {/* Izquierda */}
-      <div className="w-full flex flex-col items-center justify-center p-10 gap-4">
+      <div className="w-full flex flex-col items-center justify-center p-10 gap-6">
         <h1 className="text-3xl font-bold mb-4"> Iglesia Evangelica Peruana</h1>
         <Box
           component="img"
@@ -35,9 +28,13 @@ const Welcome = () => {
         </h3>
 
         <Box>
-        <Button type="submit" variant="contained" color="primary" sx={{
-                fontSize: '1.4rem',
+        <Button type="submit" variant="contained" 
+              sx={{
+                fontSize: '1.5rem',
                 fontWeight: 'bold',
+                backgroundColor:theme.palette.secondary.main,
+                color:"#000"
+                
               }} 
               onClick={handleClick}
               >

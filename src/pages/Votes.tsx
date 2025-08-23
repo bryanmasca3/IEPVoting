@@ -23,6 +23,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import {
   fetchVoteCounts,
   subscribeToVotes,
+  getDepartaments,
   removeSubscription,
   get_count_voters
 } from './../services/supabaseService';
@@ -35,6 +36,8 @@ const Votes = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState(0);
+    const [depa, setDepa] = useState([]);
+
   const [totalVoters,setTotalVoters]=useState(null);
   const theme = useTheme();
   // Agrupar votos por grupo y posición
@@ -58,15 +61,26 @@ const Votes = () => {
     
     try {
       const data = await get_count_voters();
+      console.log(data)
       setTotalVoters(data)
     } catch (error) {
       console.error('Error al obtener los votos:', error);
     }
   }
+  const loadDepartaments = async () => {
+      try {
+        const data = await getDepartaments();
+        setDepa(data);
+      } catch (error) {
+         console.error('Error al obtener los votos:', error);
+        //setMessage({ type: 'error', text: 'Ocurrió un error al cargar los Departamento.' });
+      }
+    };
   // Obtener los votos
   const getVoteCounts = async () => {
     try {
       const data = await fetchVoteCounts();
+      //console.log(data)
       setVoteCounts(data);
     } catch (error) {
       console.error('Error al obtener los votos:', error);
@@ -76,27 +90,15 @@ const Votes = () => {
 
   useEffect(()=>{
     getCountVoters();
+    loadDepartaments();
   },[])
-  useEffect(() => {
-    if (!user) {
-      navigate('/login');
-      return;
-    }
-    getVoteCounts();
-
-    const subscription = subscribeToVotes((payload) => {
-      console.log('Nuevo voto insertado:', payload);
-      getVoteCounts();
-    });
-
-    return () => {
-      removeSubscription(subscription);
-    };
+  useEffect(() => {   
+    getVoteCounts();    
   }, []);
 
   const groupedData = groupData();
   const departments = Object.keys(groupedData);
-
+/* console.log(groupedData) */
   return (
     <Box className="p-4">
   <Box
@@ -186,18 +188,18 @@ const Votes = () => {
               <Box>
                 {departments.map((dept, index) =>
                   index === activeTab ? (
-                    <Box key={dept}>
+                    <Box key={dept}>                      
                       {Object.entries(groupedData[dept]).map(([position, candidates]) => (
                         <Accordion key={position} defaultExpanded>
                           <AccordionSummary expandIcon={<ExpandMoreIcon/>}  sx={{
-              backgroundColor: theme.palette.background.alt, // Cambia este valor por el color deseado
+              /* backgroundColor: theme.palette.background.alt,  */
             }}>
                             <Typography className="font-semibold">
-                              {position.toUpperCase()}
+                              {/* {position.toUpperCase()}  DESCOMENTAR PARA PRESBITERIO*/}
                             </Typography>
                           </AccordionSummary>
                           <AccordionDetails  sx={{
-              backgroundColor: theme.palette.background.alt, // Cambia este valor por el color deseado
+            /*   backgroundColor: theme.palette.background.alt, */ // Cambia este valor por el color deseado
             }}>
                             <Box className="overflow-x-auto">
                               <BarChart
@@ -212,17 +214,21 @@ const Votes = () => {
                                   {
                                     scaleType: 'band',
                                     data: candidates.map((c) => c.candidate_name),
-                                    tickLabelStyle: { fontSize: 17,textTransform: 'uppercase' },
+                                    tickLabelStyle: { fontSize: 15,textTransform: 'uppercase',fontWeight:600 },
                                     colorMap: {
                                       type: "ordinal",
                                       values: candidates.map((c) => c.candidate_name),
                                       colors: candidates.map((c) => {
-                                          if(c.votes > 3){
-                                            return "#1abc9c";
+                                           const state = depa.find((it) => it.name === dept);
 
-                                          }else{
-                                           return "#e74c3c";
-                                          }
+                                            // Si existe state y es "true", usamos dos_tercios, si no, mitad_mas_uno
+                                            const threshold = state?.type 
+                                              ? totalVoters?.dos_tercios 
+                                              : totalVoters?.mitad_mas_uno;
+
+                                            // Comparación única
+                                            return c.votes >= threshold ? "#1abc9c" : "#e74c3c";
+                                          
                                       }),
                                     }
                                   },

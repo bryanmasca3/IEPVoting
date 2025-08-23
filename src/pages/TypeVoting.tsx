@@ -40,10 +40,7 @@ const TypeVoting = () => {
   };
 
   useEffect(() => {
-    if (!user) {
-      navigate('/login');
-      return;
-    }
+  
     loadTypeVoting();
   }, []);
 

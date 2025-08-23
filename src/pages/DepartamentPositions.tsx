@@ -4,7 +4,8 @@ import { TextField, Button, Box, useTheme, Typography } from '@mui/material';
 import { useAuth } from './../AuthContext';
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import CustomModal from './components/ModalCustom';
-
+import Select from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
 import {
   getDepartaments,
   createDepartament,
@@ -29,12 +30,14 @@ const DepartamentPositions = () => {
   const [showSuccess, setShowSuccess] = useState(false);
   const [formDataDepartament, setFormDataDepartament] = useState({
     name: '',
+    type:'0'
   });
   const [formDataPositions, setFormDataPositions] = useState({
     name: '',
   });
   const columnsDepartament: GridColDef[] = [
     { field: 'name', headerName: 'Nombre', flex: 1, valueGetter: (name) => name.toUpperCase() },
+     { field: 'type', headerName: 'Tipo', flex: 1, valueGetter: (type) => type?"ESTRICTO":"NO ESTRICTO" },
     {
       field: '-',
       headerName: '',
@@ -139,11 +142,7 @@ const DepartamentPositions = () => {
     }
   };
 
-  useEffect(() => {
-    if (!user) {
-      navigate('/login');
-      return;
-    }
+  useEffect(() => {   
     loadDepartaments();
     loadPositions();
   }, []);
@@ -161,6 +160,7 @@ const DepartamentPositions = () => {
       const result = await createDepartament(formDataDepartament);
       setFormDataDepartament({
         name: '',
+        type:'0'
       });
       console.log('Votante creado:', result);
       await loadDepartaments();
@@ -260,6 +260,17 @@ const DepartamentPositions = () => {
                   value={formDataDepartament.name}
                   onChange={handleChangeDepartament}
                 />
+                    <TextField
+                    select
+                    fullWidth
+                    label="Tipo"
+                    name="type"
+                    value={formDataDepartament.type}
+                    onChange={handleChangeDepartament}
+                  >
+                    <MenuItem value="0">No estricto</MenuItem>
+                    <MenuItem value="1">Estricto</MenuItem>
+                  </TextField>
               </div>
               <Button variant="contained" color="primary" fullWidth type="submit">
                 Guardar Departamento

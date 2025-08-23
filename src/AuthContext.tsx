@@ -10,8 +10,9 @@ interface User {
 
 interface AuthContextType {
   user: User | null;
-  login: (dni: string, password: string) => Promise<{ error?: { message: string } }>;
+  login: (dni: string/* , password: string */) => Promise<{ error?: { message: string } }>;
   logout: () => void;
+  loading:boolean
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -45,11 +46,12 @@ const getItemWithExpiry = (key: string) => {
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
-
+const [loading, setLoading] = useState(true);
   useEffect(() => {
     const storedUser = getItemWithExpiry('user');
     if (storedUser) {
       setUser(storedUser);
+      setLoading(false);
     }
   }, []);
 
@@ -76,7 +78,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.removeItem('user');
   };
 
-  return <AuthContext.Provider value={{ user, login, logout }}>{children}</AuthContext.Provider>;
+  return <AuthContext.Provider value={{ user, login, logout,loading }}>{children}</AuthContext.Provider>;
 };
 
 // Hook personalizado

@@ -218,11 +218,7 @@ const Configuration = () => {
   };
 
   useEffect(() => {
-    // Si no hay usuario autenticado, redirige a login
-    if (!user) {
-      navigate('/login');
-      return;
-    }
+   
 
     loadData();
   }, []);

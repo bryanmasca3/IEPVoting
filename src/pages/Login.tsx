@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { TextField, Button, Box } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from './../AuthContext';
@@ -10,23 +10,24 @@ const Login = () => {
   //const [password, setPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
 
-  const navigate = useNavigate(); // Hook para redirigir
-  const { user, login } = useAuth();
+  const navigate = useNavigate();
+  const { login } = useAuth();
 
-  useEffect(() => {
-    if (user) {
-      navigate('/');
-    }
-  }, []);
+  
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const { error } = await login(email/*, password*/); // Ejecuta el login desde el contexto
+    if(!email){
+      setErrorMessage("Debe completar el campo requerido.");
+      return;
+    }
+    const { error } = await login(email/*, password*/);
+
     if (error) {
       setErrorMessage(error.message);
       return;
     }
-    // Si el login es exitoso, el contexto actualizará el estado global y useEffect redirigirá
+    
     navigate('/');
   };
 
@@ -44,11 +45,11 @@ const Login = () => {
           borderRadius="50%"
           sx={{ objectFit: 'cover' }}
         />
-        <h3 className="text-4xl font-bold mb-4 text-center">
+        <h3 className="text-5xl font-bold mb-4 text-center">
           ELECCIONES <br></br>GENERALES <br></br>2025
         </h3>
         <p className="text-lg text-center">
-          Elegimos con fe y responsabilidad a quienes guiarán<br></br> el rumbo de nuestra iglesia.
+          Elegimos con fé y responsabilidad a quienes guiarán<br></br> el rumbo de nuestra iglesia.
         </p>
       </div>
 
@@ -71,7 +72,7 @@ const Login = () => {
                 InputLabelProps={{ style: { color: '#000',fontSize:"1.2rem" } }}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                required
+                 required 
               />
 
              {/*  <TextField

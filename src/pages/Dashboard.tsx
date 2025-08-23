@@ -1,6 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import  { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import supabase from '../supabase-client';
 import { useAuth } from './../AuthContext';
 import profileImage from './assets/profile.jpeg';
 import {
@@ -30,17 +29,18 @@ import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { Alert } from '@mui/material';
-import { BorderColor } from '@mui/icons-material';
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
+
 const Dashboard = () => {
   const theme = useTheme();
-  const { user, logout } = useAuth(); // Usuario y método de logout desde el Context
+  const { user, logout } = useAuth(); 
   const [candidates, setCandidates] = useState([]);
-  const [votes, setVotes] = useState([]); // Estado para almacenar los votos
-  const [activeDept, setActiveDept] = useState(''); // Departamento activo
-  const [voteState, setVoteState] = useState(null); // Estado de la votación
+  const [votes, setVotes] = useState([]); 
+  const [activeDept, setActiveDept] = useState('');
+  const [voteState, setVoteState] = useState(null); 
   const [errorMessage, setErrorMessage] = useState(null);
   const navigate = useNavigate();
+  const [finish,setFinish]=useState<boolean>(false);
   const [inputs, setInputs] = useState<{ positionId: string; groupId: string; value: string }[]>(
     [],
   );
@@ -55,14 +55,9 @@ const Dashboard = () => {
     }
   };
   const handleFinishVote = async () => {
-        try {
-            if (!user) {
-              alert('Debes estar autenticado para votar y/o ingresa nuevamente.');
-              return;
-            }
-            //console.log('Finalizando votación para el usuario:', user.id);
+        try {                      
             await finishVote(user.id);
-
+            setFinish(true);
           } catch (error) {
           console.error('Error al obtener candidatos:', error);
         }
@@ -101,33 +96,8 @@ const Dashboard = () => {
       console.error('Error al cargar el estado de la votación:', error);      
     }
   }
-  useEffect(() => {
-    // Si no hay usuario autenticado, redirige a login
-   /*  if (!user) {
-      navigate('/login');
-      return;
-    } */
 
-    // Función para obtener candidatos
-    loadStateVote();
-    loadVotes();
-    loadCandidates();
-    fetchConfigurations();
-  }, [voteState]);
-const handleClose = async () => {
-    await logout();
-    navigate('/login');
-    setAnchorEl(null);
-  };
-  // Cuando se carguen candidatos, si no hay departamento activo, se establece el primero disponible.
-  useEffect(() => {
-    if (candidates.length > 0 && !activeDept) {
-      const deptSet = new Set(candidates.map((candidate) => candidate.groups.name));
-      setActiveDept([...deptSet][0]);
-    }
-  }, [candidates, activeDept]);
-
-  // Función para votar
+   // Función para votar
   const handleVote = async (candidate) => {
     setErrorMessage(null);
     if (!user) return alert('Debes estar autenticado para votar.');
@@ -169,6 +139,28 @@ const handleClose = async () => {
     }
   };
 
+const handleClose = async () => {
+    await logout();
+    navigate('/login');
+    setAnchorEl(null);
+  };
+
+  useEffect(() => {   
+    loadStateVote();
+    loadVotes();
+    loadCandidates();
+    fetchConfigurations();
+  }, [finish]);
+
+  // Cuando se carguen candidatos, si no hay departamento activo, se establece el primero disponible.
+  useEffect(() => {
+    if (candidates.length > 0 && !activeDept) {
+      const deptSet = new Set(candidates.map((candidate) => candidate.groups.name));
+      setActiveDept([...deptSet][0]);
+    }
+  }, [candidates, activeDept]);
+
+ 
   // Filtramos candidatos según el departamento activo
   const filteredCandidates = candidates.filter((candidate) => candidate.groups.name === activeDept);
 
@@ -179,7 +171,7 @@ const handleClose = async () => {
     acc[position].push(candidate);
     return acc;
   }, {});
-
+  /* console.log(groupedByPosition) */
   // Obtenemos la lista de departamentos únicos
   const departments = Array.from(new Set(candidates.map((candidate) => candidate.groups.name)));
   const activeIndex = departments.indexOf(activeDept);
@@ -227,7 +219,7 @@ const handleClose = async () => {
             }}
           >
             <Typography variant="h5" className="text-white uppercase">
-              {position.toLocaleUpperCase()}
+             {/*  {position.toLocaleUpperCase()} */}
             </Typography>
           </AccordionSummary>
           <AccordionDetails
@@ -260,7 +252,7 @@ const handleClose = async () => {
                         borderRadius="50%"
                         sx={{ objectFit: 'cover' }}
                       />
-                      <Typography variant="h3" className=" text-7xl uppercase" sx={{
+                      <Typography variant="h3" className=" text-7xl uppercase text-center" sx={{
                         fontWeight:700
                       }}>
                        {/*  <span className="font-normal "> */}
@@ -296,7 +288,9 @@ const handleClose = async () => {
           disabled={activeIndex <= 0}
           onClick={() => {if (activeIndex > 0) {
             setActiveDept(departments[activeIndex - 1]);
-          }}}
+                    window.scrollTo({ top: 0, behavior: "smooth" });
+          }
+        }}
           sx={{
             marginTop: '1rem',
             fontSize: '1.2rem',
@@ -315,6 +309,7 @@ const handleClose = async () => {
       onClick={() => {
         if (activeIndex < departments.length - 1) {
           setActiveDept(departments[activeIndex + 1]);
+          window.scrollTo({ top: 0, behavior: "smooth" }); // 🔹 vuelve arriba
         }
       }}
       sx={{
@@ -331,7 +326,7 @@ const handleClose = async () => {
     // Si es el último, mostramos Terminar
     <Button
        variant="contained"      
-      onClick={() => handleFinishVote(null)} // Aquí puedes definir la acción que quieres al terminar
+      onClick={handleFinishVote} // Aquí puedes definir la acción que quieres al terminar
       sx={{
         marginTop: '1rem',
         fontSize: '1.2rem',
