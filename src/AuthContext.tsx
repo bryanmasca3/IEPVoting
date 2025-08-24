@@ -50,9 +50,9 @@ const [loading, setLoading] = useState(true);
   useEffect(() => {
     const storedUser = getItemWithExpiry('user');
     if (storedUser) {
-      setUser(storedUser);
-      setLoading(false);
+      setUser(storedUser);      
     }
+    setLoading(false);
   }, []);
 
   const login = async (dni: string/*, password: string*/) => {
