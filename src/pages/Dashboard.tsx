@@ -2,6 +2,7 @@ import  { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from './../AuthContext';
 import profileImage from './assets/profile.jpeg';
+import logoImage from './../assets/logo.png';
 import {
   fetchCandidates,
   voteForCandidate,
@@ -352,7 +353,7 @@ const handleClose = async () => {
       </Typography>
       <Button
         variant="contained"
-        color="primary"
+        color="primary" 
         onClick={handleClose}
         sx={{
           marginTop: '1rem',
@@ -364,10 +365,34 @@ const handleClose = async () => {
       >
         Cerrar session
       </Button>
-    </Box>):(<Box className="p-4" display={'flex'} flexDirection="column" alignItems="center" justifyContent="center">
-      <Typography variant="h4" className="text-white">
-        Usted tiene que estar con asistencia para votar. Contactate con el administrador.
-      </Typography></Box>)}
+    </Box>):(<Box className="p-4" display={'flex'} flexDirection="column" alignItems="center" justifyContent="center" gap={"10px"}>
+          <Box
+          component="img"
+          alt="profile"
+          src={logoImage}
+          height="200px"
+          width="200px"
+          borderRadius="50%"
+          sx={{ objectFit: 'cover' }}
+        />
+      <Typography variant="h3" className="text-white text-center">
+        No tiene asistencia registrada para votar. <br></br>Contactate con el administrador.
+      </Typography>
+      
+      <Button
+        variant="contained"
+        color="primary"
+        onClick={handleClose}
+        sx={{
+          marginTop: '1rem',
+          fontSize: '1.2rem',
+          fontWeight: 'bold',
+          color: "#000",
+          backgroundColor: theme.palette.secondary.main,
+        }}
+      >
+        Cerrar session
+      </Button></Box>)}
       </>
   );
 };
