@@ -3,7 +3,7 @@ import supabase from './../supabase-client';
 export const fetchCandidates = async () => {
   const { data, error } = await supabase.from('candidates').select(`
         id, 
-        users(first_name, last_name, dni, sede),
+        users(first_name, last_name, dni, sede, photo),
         groups(id, name),
         positions(id, name)
       `);
@@ -218,12 +218,14 @@ export const createUsers = async ({
   dni,
   sede,
   type,
+  photo,
 }: {
   first_name: string;
   last_name: string;
   dni: string;
   sede: string;
-  type: number;
+  type: string;
+  photo:string
 }) => {
   const { data: dataUser, error: dataError } = await supabase
     .from('users')
@@ -242,7 +244,8 @@ export const createUsers = async ({
       last_name: last_name.trim().toLowerCase(),
       dni: dni.trim().toLowerCase(),
       sede: sede.trim().toLowerCase(),
-      type: type,
+      type: Number(type),
+      photo:photo==''?null:photo
     },
   ]).select();
 

@@ -6,10 +6,10 @@ import {
   useTheme
 } from '@mui/material';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
-import profileImage from './../../assets/profile.jpeg';
+import profileImage from './../../assets/photo.jpg';
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 
-const Candidate = ({candidate,handle,isVoted}) => {
+const Candidate = ({candidate,handle,isVoted}) => {    
     const theme = useTheme();
     return (
         <Card key={candidate.id} onClick={() => handle(candidate)} sx={{
@@ -20,7 +20,7 @@ const Candidate = ({candidate,handle,isVoted}) => {
             }}>
             <CardContent
             className={`flex flex-col items-center gap-4  cursor-pointer`}>
-                <Box
+               {candidate.users.photo===''?<Box
                     component="img"
                     alt="profile"
                     src={profileImage}
@@ -29,6 +29,15 @@ const Candidate = ({candidate,handle,isVoted}) => {
                     borderRadius="50%"
                     sx={{ objectFit: 'cover' }}
                 />
+                        : <Box
+                        component="img"
+                        alt="profile"
+                        src={candidate.users.photo}
+                        height="200px"
+                        width="200px"
+                        borderRadius="50%"
+                        sx={{ objectFit: 'cover' }}
+                        />  }
                     <Typography variant="h3" className=" text-7xl uppercase text-center" sx={{
                         fontWeight:700
                     }}>                    

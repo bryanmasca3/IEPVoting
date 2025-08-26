@@ -50,7 +50,7 @@ const Dashboard = () => {
   const loadCandidates = async () => {
     try {
       const data = await fetchCandidates();
-      setCandidates(data);     
+      setCandidates(data);          
     } catch (error) {
        setMessage({
         type: 'error',
@@ -228,7 +228,7 @@ const handleClose = async () => {
         </Alert>
       )}
     {voteState?!voteState.state?
-    (<div className="p-4">
+    (<div className="p-4" >
       {/* Tabs para departamentos */}
       {departments.length > 0 && (
         <Tabs
@@ -364,8 +364,8 @@ const handleClose = async () => {
           No hay candidatos disponibles en este departamento.
         </Typography>
       )}
-    </div>):(<Box lassName="p-4" display={'flex'} flexDirection="column" alignItems="center" justifyContent="center">
-      <Box
+    </div>):(<Box /* className="p-4" */ display={'flex'} flexDirection="column" alignItems="center" justifyContent="center"  marginTop={"25px"} >
+     {/*  <Box
           component="img"
           alt="profile"
           src={logoImage}
@@ -373,7 +373,7 @@ const handleClose = async () => {
           width="200px"
           borderRadius="50%"
           sx={{ objectFit: 'cover' }}
-        />
+        /> */}
       <Typography variant="h4" className="text-white p-4">
         La votación ha finalizado. Gracias por participar.
       </Typography>
@@ -392,7 +392,7 @@ const handleClose = async () => {
         Cerrar session
       </Button>
     </Box>):(<Box className="p-4" display={'flex'} flexDirection="column" alignItems="center" justifyContent="center" gap={"10px"}>
-          <Box
+          {/* <Box
           component="img"
           alt="profile"
           src={logoImage}
@@ -400,7 +400,7 @@ const handleClose = async () => {
           width="200px"
           borderRadius="50%"
           sx={{ objectFit: 'cover' }}
-        />
+        /> */}
       <Typography variant="h3" className="text-white text-center">
         No tiene asistencia registrada para votar. <br></br>Contactate con el administrador.
       </Typography>

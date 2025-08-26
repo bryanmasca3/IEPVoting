@@ -15,31 +15,46 @@ import {
   useTheme,
   Typography,
 } from '@mui/material';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import { Alert, AlertColor } from '@mui/material';
 import { Switch } from '@mui/material';
 import CustomModal from './components/ModalCustom';
-
+import { styled } from '@mui/material/styles';
 import { getUsers, createUsers, updateUserState, deleteUsers } from './../services/supabaseService';
 import { MailOutline, LockOutlined, BadgeOutlined, Padding } from '@mui/icons-material';
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import { useAuth } from './../AuthContext';
 import { useNavigate } from 'react-router-dom';
+import RestartAltIcon from '@mui/icons-material/RestartAlt';
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 const Voters = () => {
   const theme = useTheme();
   const navigate = useNavigate();
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
   const [ToDelete, setToDelete] = useState(null);
-
+  const [loading,setLoading]=useState(false);
   const [formData, setFormData] = useState({
     first_name: '',
-    last_name: '',
+    last_name: '',    
     dni: '',
     password: '',
     sede: '',
     email: '',
     type: '0',
+    file:null
   });
+  const VisuallyHiddenInput = styled('input')({
+  clip: 'rect(0 0 0 0)',
+  clipPath: 'inset(50%)',
+  height: 1,
+  overflow: 'hidden',
+  position: 'absolute',
+  bottom: 0,
+  left: 0,
+  whiteSpace: 'nowrap',
+  width: 1,
+});
+
   const [users, setUsers] = useState([]);
   const [voters, setVoters] = useState([]);
   const [message, setMessage] = useState<{ type: AlertColor; text: string } | null>(null);
@@ -88,10 +103,33 @@ const Voters = () => {
   }, []);
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log(formData);
+    
     // Simular guardado (puedes reemplazar con Supabase, backend, etc.)
     try {
-      const result = await createUsers(formData);
+      let uploadData={
+        secure_url:""
+      }
+      setLoading(true);
+       if (formData.file) {
+          const imageData = new FormData();
+          imageData.append('file', formData.file);
+          imageData.append('upload_preset', 'voting_preset_by_client'); // tu upload preset
+       //   imageData.append('folder', 'voting');     // opcional si usas la API base
+
+          const uploadRes = await fetch('https://api.cloudinary.com/v1_1/dr8m7eoce/image/upload', {
+            method: 'POST',
+            body: imageData,
+          });
+           const result = await uploadRes.json();
+
+            if (!uploadRes.ok) {
+              throw new Error(result.error?.message || 'Error al subir imagen a Cloudinary');
+            }
+
+            uploadData.secure_url = result.secure_url;
+        }
+
+      await createUsers({ ...formData, photo: uploadData.secure_url });
       setFormData({
         first_name: '',
         last_name: '',
@@ -100,19 +138,24 @@ const Voters = () => {
         sede: '',
         email: '',
         type: '0',
+        file:null
       });
-      console.log('Votante creado:', result);
+      
       await loadUsers();
       setMessage({ type: 'success', text: 'Votante creado correctamente.' });
     } catch (error) {
-      console.error('Error al crear votante:', error);
+      
       setMessage({ type: 'error', text: error.message || 'Ocurrió un error al crear el votante.' });
+    }finally{
+      setLoading(false);
     }
   };
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
-
+  const handleChangeFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({ ...formData, [e.target.name]: e.target.files[0]});
+  };
   const columns: GridColDef[] = [
     {
       field: 'first_name',
@@ -140,8 +183,7 @@ const Voters = () => {
       field: 'state',
       headerName: 'Asistencia',
       width: 80,
-      renderCell: (params) => {
-        console.log(params.row.users_votes);
+      renderCell: (params) => {      
        const [checked, setChecked] = React.useState(
   Array.isArray(params.row.users_votes) && params.row.users_votes.length > 0
 );
@@ -259,11 +301,41 @@ const Voters = () => {
                 <MenuItem value="0">Votante</MenuItem>
                 <MenuItem value="1">Admin</MenuItem>
               </TextField>
-            </div>
 
-            <Button variant="contained" color="primary" fullWidth type="submit">
+              
+            </div>
+  <div className="flex gap-4">
+            
+
+               <Button
+                component="label"
+                role={undefined}
+                variant="contained"
+                tabIndex={-1}
+                startIcon={<CloudUploadIcon />}
+              >
+                Upload files
+                <VisuallyHiddenInput
+                  type="file"
+                  name='file'
+                  onChange={handleChangeFile}
+                  multiple
+                />
+              </Button>
+            </div>
+            {loading?<Box display={"flex"} justifyContent={"center"} alignItems={"center"}
+     sx={{
+        '& svg': {
+          animation: 'spin 1.5s linear infinite',
+          fontSize: 50,
+        },
+        '@keyframes spin': {
+          '0%': { transform: 'rotate(0deg)' },
+          '100%': { transform: 'rotate(360deg)' },
+        },
+      }}><RestartAltIcon/></Box>:<Button variant="contained" color="primary" fullWidth type="submit">
               Guardar Votante
-            </Button>
+            </Button>}
           </form>
         </Box>
         {/* TABLA DE VOTANTES */}

@@ -42,10 +42,12 @@ const Navbar = ({ isSidebarOpen, setIsSidebarOpen }) => {
 
   return (
     <AppBar
+     
       sx={{
         position: 'static',
         background: 'none',
         boxShadow: 'none',
+
       }}
     >
       <Toolbar sx={{ justifyContent: 'space-between' }}>
