@@ -9,6 +9,7 @@ const Welcome = () => {
   const handleClick = () => {
     navigate("/votes"); 
   };
+  
   return (
     <div className="flex flex-col md:flex-row ">
       {/* Izquierda */}

@@ -33,7 +33,7 @@ const Navbar = ({ isSidebarOpen, setIsSidebarOpen }) => {
   const [anchorEl, setAnchorEl] = useState(null);
   const isOpen = Boolean(anchorEl);
   const handleClick = (event) => setAnchorEl(event.currentTarget);
-  console.log('user', user);
+  
   const handleClose = async () => {
     await logout();
     navigate('/login');

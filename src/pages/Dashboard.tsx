@@ -1,7 +1,7 @@
-import  { useEffect, useState } from 'react';
+import  { useEffect, useState,useMemo,useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from './../AuthContext';
-import profileImage from './assets/profile.jpeg';
+
 import logoImage from './../assets/logo.png';
 import {
   fetchCandidates,
@@ -13,8 +13,6 @@ import {
   getVoteState
 } from './../services/supabaseService';
 import {
-  Card,
-  CardContent,
   Button,
   Typography,
   Tabs,
@@ -24,13 +22,14 @@ import {
   AccordionSummary,
   AccordionDetails,
   useTheme,
+  AlertColor
 } from '@mui/material';
 import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
-import CheckBoxIcon from '@mui/icons-material/CheckBox';
+ import Candidate from "./components/Card/Candidate";
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { Alert } from '@mui/material';
-import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
+
 
 const Dashboard = () => {
   const theme = useTheme();
@@ -39,7 +38,9 @@ const Dashboard = () => {
   const [votes, setVotes] = useState([]); 
   const [activeDept, setActiveDept] = useState('');
   const [voteState, setVoteState] = useState(null); 
-  const [errorMessage, setErrorMessage] = useState(null);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [message, setMessage] = useState<{ type: AlertColor; text: string } | null>(null);
+
   const navigate = useNavigate();
   const [finish,setFinish]=useState<boolean>(false);
   const [inputs, setInputs] = useState<{ positionId: string; groupId: string; value: string }[]>(
@@ -49,21 +50,16 @@ const Dashboard = () => {
   const loadCandidates = async () => {
     try {
       const data = await fetchCandidates();
-      setCandidates(data);
-      console.log(data);
+      setCandidates(data);     
     } catch (error) {
-      console.error('Error al obtener candidatos:', error);
+       setMessage({
+        type: 'error',
+        text: error.message || 'No se pudo cargar los candidatos.',
+      });      
     }
   };
-  const handleFinishVote = async () => {
-        try {                      
-            await finishVote(user.id);
-            setFinish(true);
-          } catch (error) {
-          console.error('Error al obtener candidatos:', error);
-        }
-      };
-  const fetchConfigurations = async () => {
+
+    const fetchConfigurations = async () => {
     try {
       const data = await getConfigurations();
 
@@ -72,35 +68,62 @@ const Dashboard = () => {
         groupId: item.group_id,
         value: item.max_votes.toString(),
       }));
-      console.log('Configuraciones:', formattedData); // Agregado para depuración
+
       setInputs(formattedData);
+
     } catch (error) {
-      console.error('Error al obtener configuraciones:', error);
-    }
-  };
-  const loadVotes = async () => {
-    try {
-      const data = await getVoteForUser(user.id);
-      console.log(data); // Agregado para depuración
-      setVotes(data);
-    } catch (error) {
-      console.error('Error al obtener candidatos:', error);
+          setMessage({
+              type: 'error',
+              text: error.message || 'No se pudo cargar las configuraciones.',
+            });
     }
   };
 
+   const loadVotes = async () => {
+    try {
+      if (!user) return alert('Debes estar autenticado para votar.');
+      const data = await getVoteForUser(user.id);      
+      setVotes(data);
+    } catch (error) {
+       setMessage({
+              type: 'error',
+              text: error.message || 'No se pudo cargar los votos actuales del usuario.',
+            });
+    }
+  };
+
+  const handleFinishVote = async () => {
+        try {                      
+           if (!user) return alert('Debes estar autenticado para votar.');
+            await finishVote(user.id);
+            setFinish(true);
+          } catch (error) {
+            setMessage({
+              type: 'error',
+              text: error.message || 'No se pudo finalizar las votaciones.',
+            });
+            setTimeout(() => setMessage(null), 3000);
+        }
+  };
+
+ 
+
   const loadStateVote = async () => {
     try {
-      const data = await getVoteState(user.id);
-      console.log('Estado de la votación:', data); // Agregado para depuración
+      if (!user) return alert('Debes estar autenticado para votar.');
+      const data = await getVoteState(user.id);     
       setVoteState(data);
     } catch (error) {
-      console.error('Error al cargar el estado de la votación:', error);      
+      setMessage({
+              type: 'error',
+              text: error.message || 'No se pudo cargar el estado de los votos.',
+            });   
     }
   }
 
    // Función para votar
-  const handleVote = async (candidate) => {
-    setErrorMessage(null);
+  const handleVote = useCallback(async (candidate) => {
+    setErrorMessage('');
     if (!user) return alert('Debes estar autenticado para votar.');
 
     const existingVote = votes.find((vote) => vote.candidate_id === candidate.id);
@@ -138,20 +161,29 @@ const Dashboard = () => {
     } catch (error) {
       console.error('Error al votar:', error);
     }
-  };
+  }, [votes, inputs, user, loadVotes]);
 
 const handleClose = async () => {
     await logout();
-    navigate('/login');
-    setAnchorEl(null);
+    navigate('/login');    
   };
 
-  useEffect(() => {   
-    loadStateVote();
+  useEffect(() => {    
     loadVotes();
+  }, []);
+
+  useEffect(() => {
     loadCandidates();
+  }, []);
+
+  useEffect(() => {
     fetchConfigurations();
+  }, []);
+
+  useEffect(() => {
+    loadStateVote();
   }, [finish]);
+
 
   // Cuando se carguen candidatos, si no hay departamento activo, se establece el primero disponible.
   useEffect(() => {
@@ -159,24 +191,42 @@ const handleClose = async () => {
       const deptSet = new Set(candidates.map((candidate) => candidate.groups.name));
       setActiveDept([...deptSet][0]);
     }
-  }, [candidates, activeDept]);
+  }, [candidates,activeDept]);
 
  
   // Filtramos candidatos según el departamento activo
-  const filteredCandidates = candidates.filter((candidate) => candidate.groups.name === activeDept);
+  const filteredCandidates = useMemo(() => {
+    return candidates.filter((c) => c.groups.name === activeDept);
+  }, [candidates, activeDept]);
 
   // Agrupamos los candidatos filtrados por su posición
-  const groupedByPosition = filteredCandidates.reduce((acc, candidate) => {
+  const groupedByPosition = useMemo(() => {
+  return filteredCandidates.reduce((acc, candidate) => {
     const position = candidate.positions.name;
     if (!acc[position]) acc[position] = [];
     acc[position].push(candidate);
     return acc;
   }, {});
-  /* console.log(groupedByPosition) */
-  // Obtenemos la lista de departamentos únicos
-  const departments = Array.from(new Set(candidates.map((candidate) => candidate.groups.name)));
+}, [filteredCandidates]);
+
+  const departments = useMemo(() => {
+    return Array.from(new Set(candidates.map((c) => c.groups.name)));
+  }, [candidates]);
+
   const activeIndex = departments.indexOf(activeDept);
+
+ 
+
   return (<>
+   {message && (
+        <Alert
+          severity={message.type}
+          sx={{ position: 'fixed', bottom: 16, right: 16, zIndex: 9999 }}
+          onClose={() => setMessage(null)} // Permite cerrar el mensaje manualmente
+        >
+          {message.text}
+        </Alert>
+      )}
     {voteState?!voteState.state?
     (<div className="p-4">
       {/* Tabs para departamentos */}
@@ -233,46 +283,13 @@ const handleClose = async () => {
                 // Verificamos si el candidato fue votado por el usuario.
                 const isVoted = votes.some((vote) => vote.candidate_id === candidate.id);
 
-                return (
-                  <Card key={candidate.id} onClick={() => handleVote(candidate)} sx={{
-                    backgroundColor: isVoted? theme.palette.primary[800]: theme.palette.primary[600],
-                    border: isVoted
-                      ? `3px solid ${theme.palette.secondary.main}`
-                      : `3px solid ${theme.palette.primary[600]}`,
-                  }}>
-                    <CardContent
-                      className={`flex flex-col items-center gap-4  cursor-pointer`}
-                     
-                    >
-                      <Box
-                        component="img"
-                        alt="profile"
-                        src={profileImage}
-                        height="200px"
-                        width="200px"
-                        borderRadius="50%"
-                        sx={{ objectFit: 'cover' }}
-                      />
-                      <Typography variant="h3" className=" text-7xl uppercase text-center" sx={{
-                        fontWeight:700
-                      }}>
-                       {/*  <span className="font-normal "> */}
-                          {candidate.users.first_name + ' ' + candidate.users.last_name}
-                     {/*    </span> */}
-                      </Typography>
-                      <Typography variant="h5" className="font-semibold">
-                        Sede: <span className="font-normal capitalize">{candidate.users.sede}</span>
-                      </Typography>
-                      <Box>                      
-                        {isVoted?<CheckBoxIcon sx={{ fontSize: 40 }} />:<CheckBoxOutlineBlankIcon  sx={{ fontSize: 40 }} />}
-                      </Box>
-                    </CardContent>
-                  </Card>
+                return (                
+                  <Candidate candidate={candidate} handle={handleVote} isVoted={isVoted} />
                 );
               })}
             </Box>
             <Box className="mt-4">
-              {errorMessage && (
+              {errorMessage!='' && (
                 <Alert severity="error" className="mb-4 bg-red-600">
                   {errorMessage}
                 </Alert>
@@ -348,6 +365,15 @@ const handleClose = async () => {
         </Typography>
       )}
     </div>):(<Box lassName="p-4" display={'flex'} flexDirection="column" alignItems="center" justifyContent="center">
+      <Box
+          component="img"
+          alt="profile"
+          src={logoImage}
+          height="200px"
+          width="200px"
+          borderRadius="50%"
+          sx={{ objectFit: 'cover' }}
+        />
       <Typography variant="h4" className="text-white p-4">
         La votación ha finalizado. Gracias por participar.
       </Typography>

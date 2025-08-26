@@ -160,7 +160,7 @@ export const getVoteState = async (userId:string) => {
     .from('users_votes')
     .select('*')
     .eq('id_voter', userId)
-    .single();
+    .maybeSingle();
 
   if (error) {
     throw error;

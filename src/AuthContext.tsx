@@ -68,7 +68,7 @@ const [loading, setLoading] = useState(true);
     }*/
 
     setUser(data);
-    setItemWithExpiry('user', data, 30 * 60 * 1000); // 30 minutos
+    setItemWithExpiry('user', data, 5 * 60 * 1000); // 30 minutos
 
     return { error: undefined };
   };
