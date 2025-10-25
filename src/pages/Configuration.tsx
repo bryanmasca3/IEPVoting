@@ -331,7 +331,7 @@ const Configuration = () => {
                     label="Position"
                     onChange={(e) => handleChange(positionId, groupId, e.target.value)}
                   >
-                    <MenuItem value="a">Uno</MenuItem>
+                    <MenuItem value="1">Uno</MenuItem>
                     <MenuItem value="2">Dos</MenuItem>
                     <MenuItem value="3">Tres</MenuItem>
                     <MenuItem value="4">Cuatro</MenuItem>
