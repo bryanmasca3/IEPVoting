@@ -268,7 +268,7 @@ const Dashboard = () => {
                   }}
                 >
                   <Typography variant="h5" className="text-white uppercase">
-                    {/*  {position.toLocaleUpperCase()} */}
+                      {position.toLocaleUpperCase()} 
                   </Typography>
                 </AccordionSummary>
                 <AccordionDetails
