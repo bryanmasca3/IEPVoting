@@ -195,7 +195,7 @@ const Votes = () => {
               /* backgroundColor: theme.palette.background.alt,  */
             }}>
                             <Typography className="font-semibold">
-                              {/* {position.toUpperCase()}  DESCOMENTAR PARA PRESBITERIO*/}
+                              {position.toUpperCase()}  
                             </Typography>
                           </AccordionSummary>
                           <AccordionDetails  sx={{
